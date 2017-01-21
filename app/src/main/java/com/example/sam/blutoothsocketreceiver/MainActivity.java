@@ -438,7 +438,61 @@ public class MainActivity extends ActionBarActivity {
             public void run() {
                 //read data from file
                 for (int j = 0; j < dataPoints.size(); j++) {
+                    Log.e("Beginning", "Test here");
+                    Log.e("Test 1", "super file is not null!");
+                    try {
+                        Log.e("Test 2", "assign file data to Json");
+                        JSONObject superData = dataPoints.get(j);
+                        String matchNum = superData.get("matchNumber").toString();
+                        String matchAndTeamOne = superData.get("teamOne") + "Q" + matchNum;
+                        String matchAndTeamTwo = superData.get("teamTwo") + "Q" + matchNum;
+                        String matchAndTeamThree = superData.get("teamThree") + "Q" + matchNum;
+                        String teamOneNumber = superData.getString("teamOne");
+                        String teamTwoNumber = superData.getString("teamTwo");
+                        String teamThreeNumber = superData.getString("teamThree");
+                        JSONObject teamOneData = superData.getJSONObject(teamOneNumber);
+                        JSONObject teamTwoData = superData.getJSONObject(teamTwoNumber);
+                        JSONObject teamThreeData = superData.getJSONObject(teamThreeNumber);
 
+                        JSONObject teamOneKeyNames = new JSONObject(teamOneData.toString());
+                        JSONObject teamTwoKeyNames = new JSONObject(teamTwoData.toString());
+                        JSONObject teamThreeKeyNames = new JSONObject(teamThreeData.toString());
+
+                        Iterator getTeamOneKeys = teamOneKeyNames.keys();
+                        Iterator getTeamTwoKeys = teamTwoKeyNames.keys();
+                        Iterator getTeamThreeKeys = teamThreeKeyNames.keys();
+                        ArrayList<Integer> teamNumbers = new ArrayList<>(Arrays.asList(Integer.valueOf(teamOneNumber), Integer.valueOf(teamTwoNumber), Integer.valueOf(teamThreeNumber)));
+
+                        for (int i = 0; i < teamNumbers.size(); i++){
+                            dataBase.child("TeamInMatchDatas").child(teamNumbers.get(i) + "Q" + matchNum).child("teamNumber").setValue(teamNumbers.get(i));
+                            dataBase.child("TeamInMatchDatas").child(teamNumbers.get(i) + "Q" + matchNum).child("matchNumber").setValue(Integer.parseInt(matchNum));
+                        }
+
+                        while (getTeamOneKeys.hasNext()) {
+                            String teamOneKeys = (String) getTeamOneKeys.next();
+                            dataBase.child("TeamInMatchDatas").child(matchAndTeamOne).child(teamOneKeys).setValue(Integer.parseInt(teamOneData.get(teamOneKeys).toString()));
+                        }
+                        while (getTeamTwoKeys.hasNext()) {
+                            String teamTwoKeys = (String) getTeamTwoKeys.next();
+                            dataBase.child("TeamInMatchDatas").child(matchAndTeamTwo).child(teamTwoKeys).setValue(Integer.parseInt(teamTwoData.get(teamTwoKeys).toString()));
+                        }
+                        while (getTeamThreeKeys.hasNext()) {
+                            String teamThreeKeys = (String) getTeamThreeKeys.next();
+                            dataBase.child("TeamInMatchDatas").child(matchAndTeamThree).child(teamThreeKeys).setValue(Integer.parseInt(teamThreeData.get(teamThreeKeys).toString()));
+                        }
+                        if (!isRed){
+                            dataBase.child("Matches").child(matchNum).child("number").setValue(matchNum);
+                            dataBase.child("Matches").child(matchNum).child("blueAllianceTeamNumbers").setValue(teamNumbers);
+                            dataBase.child("Matches").child(matchNum).child("blueScore").setValue(Integer.parseInt(superData.get("Blue Alliance Score").toString()));
+                        }else{
+                            dataBase.child("Matches").child(matchNum).child("number").setValue(Integer.valueOf(matchNum));
+                            dataBase.child("Matches").child(matchNum).child("redAllianceTeamNumbers").setValue(teamNumbers);
+                            dataBase.child("Matches").child(matchNum).child("redScore").setValue(Integer.parseInt(superData.get("Red Alliance Score").toString()));
+                        }
+
+                    } catch (JSONException JE) {
+                        Log.e("json error", "failed to get super json");
+                    }
                 }
                 toasts("Resent Super data!", false);
             }
